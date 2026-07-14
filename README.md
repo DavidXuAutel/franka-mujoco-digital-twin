@@ -8,6 +8,13 @@ Design approved; MVP implementation on branch `feature/online-digital-twin-mvp`.
 
 See [docs/superpowers/specs/2026-07-14-online-digital-twin-design.md](docs/superpowers/specs/2026-07-14-online-digital-twin-design.md).
 
+## Dev install
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
 ## Constraints
 
 - Observation only: the twin does not command the real robot.
