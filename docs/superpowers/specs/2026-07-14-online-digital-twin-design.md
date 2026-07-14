@@ -3,7 +3,7 @@
 **Date:** 2026-07-14  
 **Project:** `franka-mujoco-digital-twin`  
 **Branch for MVP:** `feature/online-digital-twin-mvp`  
-**Status:** Approved in brainstorming; pending implementation plan
+**Status:** Approved; implementation plan at `docs/superpowers/plans/2026-07-14-online-digital-twin-mvp.md`
 
 ## Goal
 
