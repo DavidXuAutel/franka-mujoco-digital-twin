@@ -1,0 +1,4 @@
+# Copy to camera_extrinsics.yaml and set T_base_camera: [x,y,z,qw,qx,qy,qz]
+frame_parent: fr3_link0
+frame_child: cam1_color_optical_frame
+T_base_camera: [0.5, 0.0, 0.4, 1.0, 0.0, 0.0, 0.0]
