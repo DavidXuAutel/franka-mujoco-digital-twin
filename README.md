@@ -15,6 +15,14 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## Remote bringup
+
+Deploy and run on `yao@10.229.20.125` (observation only, alongside existing teleop):
+
+- [docs/bringup_remote.md](docs/bringup_remote.md) — rsync, install, extrinsics, launch, acceptance checklist
+- `./scripts/sync_to_remote.sh` — push repo to the remote host
+- `./scripts/run_twin_mvp.sh` or `python launch/twin_mvp.launch.py` — start `pose_node` + `twin_node`
+
 ## Constraints
 
 - Observation only: the twin does not command the real robot.
