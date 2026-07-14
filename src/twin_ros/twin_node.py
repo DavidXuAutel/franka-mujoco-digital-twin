@@ -29,12 +29,14 @@ from twin_ros.tcp_fk import get_tcp_pose
 from twin_ros.topics import load_topics
 from twin_types.object_library import load_object_spec
 from twin_types.poses import ObjectPose
+from twin_types.staleness import apply_pose_staleness
 
 _DEFAULT_MODEL = str(Path(__file__).resolve().parents[1] / "twin_mujoco" / "scene_mvp.xml")
 FRANKA_JOINT_NAMES = [f"fr3_joint{i}" for i in range(1, 8)]
 GRIPPER_FINGER_JOINTS = ["fr3_finger_joint1", "fr3_finger_joint2"]
 FINGER_OPEN_M = 0.04
 DEFAULT_OBJECT_HALF_EXTENT_M = 0.05
+DEFAULT_OBJECT_STALE_S = 0.5
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -58,6 +60,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--topics-yaml", default=None, help="Path to configs/topics.yaml")
     parser.add_argument("--near-contact-m", type=float, default=0.02)
+    parser.add_argument(
+        "--object-stale-s",
+        type=float,
+        default=DEFAULT_OBJECT_STALE_S,
+        help="Mark object tracking_ok=False if last pose stamp is older than this (camera death)",
+    )
     parser.add_argument(
         "--tcp-name",
         default="tcp_proxy",
@@ -212,12 +220,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         with mujoco.viewer.launch_passive(driver.model, driver.data) as viewer:
             while viewer.is_running():
+                now_s = time.time()
                 arm, gripper, arm_stamp, obj_pose = node.snapshot()
+                obj_pose = apply_pose_staleness(obj_pose, now_s=now_s, max_age_s=args.object_stale_s)
                 if obj_pose is not None:
                     aggregator.update_objects([obj_pose])
                 if arm is not None:
-                    aggregator.update_arm(arm, gripper_width=gripper, stamp_s=arm_stamp or time.time())
-                    state = aggregator.build(stamp_s=time.time(), tcp_pose_world=None)
+                    aggregator.update_arm(arm, gripper_width=gripper, stamp_s=arm_stamp or now_s)
+                    state = aggregator.build(stamp_s=now_s, tcp_pose_world=None)
                     driver.apply(state)
                     try:
                         tcp_pose = get_tcp_pose(driver.model, driver.data, name=args.tcp_name)
@@ -225,6 +235,7 @@ def main(argv: list[str] | None = None) -> int:
                         tcp_pose = None
                     if tcp_pose is not None:
                         state = aggregator.build(stamp_s=state.stamp_s, tcp_pose_world=tcp_pose)
+                        driver.apply(state)
                     print(format_overlay(state), flush=True)
                 viewer.sync()
                 if period:

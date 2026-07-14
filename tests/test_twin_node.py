@@ -20,6 +20,7 @@ def test_build_arg_parser_defaults():
     assert args.object_half_extent_m is None
     assert args.tcp_name == "tcp_proxy"
     assert args.rate_hz == 30.0
+    assert args.object_stale_s == twin_node.DEFAULT_OBJECT_STALE_S
 
 
 def test_resolve_half_extent_default_is_fixed_value():

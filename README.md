@@ -10,8 +10,14 @@ See [docs/superpowers/specs/2026-07-14-online-digital-twin-design.md](docs/super
 
 ## Dev install
 
+Requires **Python ≥ 3.10** (system 3.9 will fail `pip install -e`).
+
 ```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
 pip install -e ".[dev]"
+# optional local vision / mujoco extras:
+# pip install -e ".[dev,vision,mujoco]"
 pytest
 ```
 

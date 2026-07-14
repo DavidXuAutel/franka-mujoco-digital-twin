@@ -20,13 +20,14 @@
   MuJoCo <include> of URDF is awkward (mesh paths, autolimits, merge rules).
   Recommended workflow on the remote host:
 
-    1. cp src/twin_mujoco/scene_fr3_wrapper.xml.example \
-          src/twin_mujoco/scene_fr3_wrapper.xml
-    2. Uncomment/adjust the <include> below to point at $TWIN_MUJOCO_MODEL, or
-       at a one-shot MJCF export if direct URDF include fails.
+    1. export TWIN_MUJOCO_MODEL=/home/yao/franka_mujoco_sync/fr3.mujoco.urdf
+    2. python3 scripts/prepare_fr3_scene.py --require-exists
+       → writes src/twin_mujoco/scene_fr3_wrapper.xml with <include> set
     3. Confirm the included model exposes fr3_joint1..7 and fr3_finger_joint1/2
        (TwinMujocoDriver applies qpos when those joints exist).
     4. Launch twin_node with --model src/twin_mujoco/scene_fr3_wrapper.xml
+
+  Manual alternative: copy this example, uncomment <include>, set the file path.
 
   Alternative (no wrapper): pass the FR3 file directly only if you have already
   added a mocap body named object_cube_a inside that model:

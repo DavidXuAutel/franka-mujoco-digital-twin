@@ -83,24 +83,31 @@ export TWIN_MUJOCO_MODEL=/home/yao/franka_mujoco_sync/fr3.mujoco.urdf
 
 ### Inject mocap `object_cube_a` (wrapper XML)
 
-The synced FR3 model has `fr3_joint1`…`fr3_joint7` and gripper joints but **no** mocap body for AprilTag-tracked `cube_a`. Add one via a thin wrapper around the robot file:
+The synced FR3 model has `fr3_joint1`…`fr3_joint7` and gripper joints but **no** mocap body for AprilTag-tracked `cube_a`. Generate a wrapper with an explicit include:
 
 ```bash
 cd ~/franka_mujoco_digital_twin
-cp src/twin_mujoco/scene_fr3_wrapper.xml.example src/twin_mujoco/scene_fr3_wrapper.xml
-# Edit scene_fr3_wrapper.xml: uncomment <include> and set file="$TWIN_MUJOCO_MODEL"
-# (or an MJCF export if MuJoCo cannot <include> the URDF directly)
+export TWIN_MUJOCO_MODEL=/home/yao/franka_mujoco_sync/fr3.mujoco.urdf
+python3 scripts/prepare_fr3_scene.py --require-exists
+# writes src/twin_mujoco/scene_fr3_wrapper.xml
 ```
 
-See comments in [src/twin_mujoco/scene_fr3_wrapper.xml.example](../src/twin_mujoco/scene_fr3_wrapper.xml.example). The wrapper adds:
+If MuJoCo cannot `<include>` the URDF directly, convert once to MJCF and point `TWIN_MUJOCO_MODEL` at that `.xml`, then re-run the script.
+
+The wrapper adds:
 
 - `floor` plane (optional visual ground)
 - `object_cube_a` **mocap** body — must match `configs/objects/cube_a.yaml` (`mujoco_body: object_cube_a`) and `twin_node --object-body`
+
+Object geom color feedback (viewer): orange = tracking OK, red = lost/stale, green = near-contact.
+
+`twin_node` marks object `tracking_ok=False` if the last `/twin/object_poses` stamp is older than `--object-stale-s` (default 0.5 s), covering camera death when `pose_node` stops publishing.
 
 Quick load check (no ROS):
 
 ```bash
 export TWIN_MUJOCO_MODEL=/home/yao/franka_mujoco_sync/fr3.mujoco.urdf
+python3 scripts/prepare_fr3_scene.py --require-exists
 python -c "import mujoco; m=mujoco.MjModel.from_xml_path('src/twin_mujoco/scene_fr3_wrapper.xml'); print('bodies', m.nbody, 'mocap', m.nmocap)"
 ```
 

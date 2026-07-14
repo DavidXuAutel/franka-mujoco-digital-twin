@@ -12,3 +12,4 @@ log/
 .ruff_cache/
 
 .worktrees/
+src/twin_mujoco/scene_fr3_wrapper.xml
