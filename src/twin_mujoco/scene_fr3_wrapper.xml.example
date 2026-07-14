@@ -1,0 +1,62 @@
+<!--
+  FR3 scene wrapper for twin_node (remote MuJoCo bringup).
+
+  The real Franka FR3 MuJoCo asset lives outside this repo. On the ROS host
+  (yao@10.229.20.125) set:
+
+    export TWIN_MUJOCO_MODEL=/home/yao/franka_mujoco_sync/fr3.mujoco.urdf
+
+  That path is the same model used by the legacy mujoco_ros_mirror stack in
+  franka_mujoco_sync. twin_node loads whatever file you pass via --model; it
+  does not read TWIN_MUJOCO_MODEL automatically — use the env var as the
+  canonical location when copying or editing this wrapper.
+
+  Why a wrapper?
+  - scene_mvp.xml is a TCP-proxy stub for local/offline tests.
+  - The synced FR3 URDF/MJCF has fr3_joint* and fr3_finger_joint* but no
+    mocap body for AprilTag-tracked objects.
+  - This file shows how to add floor + object_cube_a (mocap) around the robot.
+
+  MuJoCo <include> of URDF is awkward (mesh paths, autolimits, merge rules).
+  Recommended workflow on the remote host:
+
+    1. cp src/twin_mujoco/scene_fr3_wrapper.xml.example \
+          src/twin_mujoco/scene_fr3_wrapper.xml
+    2. Uncomment/adjust the <include> below to point at $TWIN_MUJOCO_MODEL, or
+       at a one-shot MJCF export if direct URDF include fails.
+    3. Confirm the included model exposes fr3_joint1..7 and fr3_finger_joint1/2
+       (TwinMujocoDriver applies qpos when those joints exist).
+    4. Launch twin_node with --model src/twin_mujoco/scene_fr3_wrapper.xml
+
+  Alternative (no wrapper): pass the FR3 file directly only if you have already
+  added a mocap body named object_cube_a inside that model:
+
+    python -m twin_ros.twin_node --model "$TWIN_MUJOCO_MODEL" ...
+
+  For grasp metrics on a real FR3 mesh, override --tcp-name to a hand site/body
+  present in the FR3 model (e.g. fr3_hand_tcp); defaults tcp_proxy/tcp_site are
+  for scene_mvp.xml only.
+-->
+<mujoco model="twin_fr3_wrapper">
+  <option timestep="0.002"/>
+
+  <!--
+    Robot include — replace with your remote FR3 asset.
+    Example (from TWIN_MUJOCO_MODEL):
+      /home/yao/franka_mujoco_sync/fr3.mujoco.urdf
+    If <include> fails for URDF, load the URDF once in simulate/mjpython, save
+    as MJCF, and include that .xml instead.
+  -->
+  <!-- <include file="/home/yao/franka_mujoco_sync/fr3.mujoco.urdf"/> -->
+
+  <worldbody>
+    <geom name="floor" type="plane" size="2 2 0.05" rgba="0.8 0.8 0.8 1"/>
+    <light pos="0 0 2" dir="0 0 -1" diffuse="0.9 0.9 0.9"/>
+
+    <!-- Mocap body for configs/objects/cube_a.yaml (mujoco_body: object_cube_a).
+         Name must match twin_node --object-body (default object_cube_a). -->
+    <body name="object_cube_a" pos="0.4 0 0.05" mocap="true">
+      <geom name="object_cube_a_geom" type="box" size="0.05 0.05 0.05" rgba="0.9 0.4 0.1 1"/>
+    </body>
+  </worldbody>
+</mujoco>
