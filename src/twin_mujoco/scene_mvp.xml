@@ -1,0 +1,13 @@
+<mujoco model="twin_mvp">
+  <option timestep="0.002"/>
+  <worldbody>
+    <geom name="floor" type="plane" size="1 1 0.05" rgba="0.8 0.8 0.8 1"/>
+    <body name="tcp_proxy" pos="0 0 0.3">
+      <geom name="tcp_sphere" type="sphere" size="0.01" rgba="0 0 1 1"/>
+      <site name="tcp_site" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="object_cube_a" pos="0.4 0 0.05" mocap="true">
+      <geom name="object_cube_a_geom" type="box" size="0.05 0.05 0.05" rgba="0.9 0.4 0.1 1"/>
+    </body>
+  </worldbody>
+</mujoco>
