@@ -116,6 +116,11 @@ def test_miss_without_any_prior_detection_returns_empty():
 
 
 def test_miss_after_timeout_still_holds_last_pose():
+    """MVP intentionally holds the last pose forever, not only within the timeout.
+
+    ``lose_track_timeout_s`` is stored but not enforced yet; a miss long after
+    that window still returns the held pose with ``tracking_ok=False``.
+    """
     dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_APRILTAG_36h11)
     tag = cv2.aruco.generateImageMarker(dictionary, 0, 200)
     img_with_tag = np.full((480, 640), 255, dtype=np.uint8)

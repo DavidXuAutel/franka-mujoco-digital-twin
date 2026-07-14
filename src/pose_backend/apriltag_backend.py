@@ -23,6 +23,9 @@ def _resolve_dictionary(tag_family: str) -> cv2.aruco.Dictionary:
 class AprilTagBackend:
     """PoseBackend that detects a single AprilTag per object via cv2.aruco.
 
+    On a missed detection, the last successfully observed pose is held indefinitely
+    with ``tracking_ok=False``. There is no time-based eviction in the MVP.
+
     Adapts to whichever cv2.aruco API is installed:
     - Detection: the modern ``cv2.aruco.ArucoDetector`` class if available,
       otherwise the legacy free-function ``cv2.aruco.detectMarkers``.
@@ -37,6 +40,16 @@ class AprilTagBackend:
         T_base_camera: Pose3D,
         lose_track_timeout_s: float = 0.5,
     ) -> None:
+        """Configure detection for one known object.
+
+        Args:
+            object_spec: Known object and tag metadata.
+            T_base_camera: Static extrinsic from the robot/world base frame to the
+                camera.
+            lose_track_timeout_s: Reserved for a future eviction policy once the tag
+                has been unseen for this duration. Currently unused by design: on
+                miss, the last pose is held forever with ``tracking_ok=False``.
+        """
         self._spec = object_spec
         self._T_base_camera = T_base_camera
         self._lose_track_timeout_s = lose_track_timeout_s
